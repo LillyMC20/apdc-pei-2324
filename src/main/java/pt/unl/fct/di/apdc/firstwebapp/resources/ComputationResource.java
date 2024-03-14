@@ -13,6 +13,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import com.google.gson.Gson;
+import java.util.logging.Level;
+import java.net.URI;
 
 
 @Path("/utils")
@@ -30,9 +32,13 @@ public class ComputationResource {
 	@Path("/hello")
 	@Produces(MediaType.TEXT_PLAIN)
 	public Response hello() throws IOException {
-		//LOG.fine("Saying hello!!");
-		//return Response.ok().entity("Hello apdc-pei-2324 class! I hope you are having a fine day.").build();
-		throw new IOException("UPS");
+		try{
+			throw new IOException("UPS");
+		} catch (Exception e) {
+			LOG.log(Level.SEVERE, "Exceptiion on method /hello",e);			
+			return Response.temporaryRedirect(URI.create("/error/500.html")).build();
+		}
+		
 	}
 	
 	@GET
@@ -42,4 +48,20 @@ public class ComputationResource {
 		LOG.fine("Replying to date request.");
 		return Response.ok().entity(g.toJson(fmt.format(new Date()))).build();
 	}
-}
+
+	@GET
+	@Path("/compute")
+	public Response executeComputeTask() {
+		LOG.fine("Starting to execute computation taks");
+
+		try {
+			Thread.sleep(60*1000*10); //10 min...
+		} catch (Exception e) {
+			LOG.logp(Level.SEVERE, this.getClass().getCanonicalName(), "executeComputeTask"
+			, "An exception has ocurred", e);
+
+			return Response.serverError().build();
+		} //Simulates 60s execution
+			return Response.ok().build();
+		}
+	}
