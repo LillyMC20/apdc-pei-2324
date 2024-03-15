@@ -46,12 +46,12 @@ public class RegisterResource{
         if(!data.isRegValid())
             return Response.status(Response.Status.BAD_REQUEST).entity("Missing or wrong parameter").build();
 
-        Key userKey = datastore.newKeyFactory().setKind("user").newKey(data.username);
+        Key userKey = datastore.newKeyFactory().setKind("username").newKey(data.username);
         
         Entity person = Entity.newBuilder(userKey)
-        .set("user_pwd", DigestUtils.sha512Hex(data.password))
-        .set("user_creation_timestamp", Timestamp.now())
-        .build();
+            .set("user_pwd", DigestUtils.sha512Hex(data.password))
+            .set("user_creation_timestamp", Timestamp.now())
+            .build();
 
         datastore.put(person);
         LOG.info("User registered: " + data.username);
