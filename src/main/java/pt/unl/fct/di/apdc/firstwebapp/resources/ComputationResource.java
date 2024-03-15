@@ -49,6 +49,7 @@ public class ComputationResource {
 		return Response.ok().entity(g.toJson(fmt.format(new Date()))).build();
 	}
 
+	/* 
 	@GET
 	@Path("/compute")
 	public Response executeComputeTask() {
@@ -64,4 +65,5 @@ public class ComputationResource {
 		} //Simulates 60s execution
 			return Response.ok().build();
 		}
+		*/
 	}

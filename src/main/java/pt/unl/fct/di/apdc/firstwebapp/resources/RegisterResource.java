@@ -1,7 +1,6 @@
 package pt.unl.fct.di.apdc.firstwebapp.resources;
 
 import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
@@ -9,12 +8,14 @@ import java.util.logging.Logger;
 
 import javax.ws.rs.POST;
 import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
 import javax.ws.rs.core.Response;
 
-import pt.unl.fct.di.apdc.firstwebapp.util.AuthToken;
-import pt.unl.fct.di.apdc.firstwebapp.util.LoginData;
+//import pt.unl.fct.di.apdc.firstwebapp.util.AuthToken;
 
+import pt.unl.fct.di.apdc.firstwebapp.util.RegisterData;
+
+import com.google.appengine.repackaged.org.apache.commons.codec.digest.DigestUtils;
+import com.google.cloud.Timestamp;
 import com.google.cloud.datastore.Datastore;
 import com.google.cloud.datastore.DatastoreOptions;
 import com.google.cloud.datastore.Entity;
@@ -23,7 +24,7 @@ import com.google.gson.Gson;
 
 
 
-@Path("/login")
+@Path("/register")
 @Produces(MediaType.APPLICATION_JSON + ";charset=utf-8")
 public class RegisterResource{
 
@@ -36,28 +37,25 @@ public class RegisterResource{
     public RegisterResource() { } //nothing to be done here
 
     @POST
-    @Path("/rest/register/v1")
+    @Path("/v1")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response doRegister(LoginData data) {
-        
-        Key userKey = datastore.newKeyFactory().setKind("Person").newKey("Lilly");
+    public Response doRegister(RegisterData data) {
+        LOG.fine("Attempt to register user: " + data.username);
+
+        //Check ipnut data
+        if(!data.isRegValid())
+            return Response.status(Response.Status.BAD_REQUEST).entity("Missing or wrong parameter").build();
+
+        Key userKey = datastore.newKeyFactory().setKind("user").newKey(data.username);
         
         Entity person = Entity.newBuilder(userKey)
-        .set("email", "lilly@fct.unl.pt")
+        .set("user_pwd", DigestUtils.sha512Hex(data.password))
+        .set("user_creation_timestamp", Timestamp.now())
         .build();
 
         datastore.put(person);
-        return Response.ok().entity(g.toJson("User registered")).build();
-    }
-
-    @GET
-    @Path("/{username}")
-    public Response checkUsernameAvailble(@PathParam("username") String username) {
-        
-        if (username.equals("lmc"))
-            return Response.ok().entity(g.toJson(false)).build();
-        else
-            return Response.ok().entity(g.toJson(true)).build();
+        LOG.info("User registered: " + data.username);
+        return Response.ok("{}").build(); //.entity(g.toJson("User registered")).build();
     }
 
     
